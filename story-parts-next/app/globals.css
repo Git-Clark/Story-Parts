@@ -1,0 +1,568 @@
+/* ============================================================
+   STORY PARTS — global stylesheet
+   Film authorship & other projects
+
+   Two zones, one rule:
+   The RAIL is the film margin. The MAIN pane is the frame.
+   Anything technical (optical track, perforations, edge codes)
+   belongs in the margin. The image area stays clean.
+   ============================================================ */
+
+/* ---------- 1. Design tokens ---------- */
+
+:root {
+  /* Paper side */
+  --paper:        #E6E1D6;
+  --paper-card:   rgba(255, 253, 248, 0.35);
+  --ink:          #241F18;
+  --ink-2:        #3A342A;
+  --ink-3:        #4A4235;
+  --muted:        #7A7263;
+  --muted-2:      #8A8069;
+  --rule:         #D2CABA;
+  --rule-strong:  #A89E8C;
+  --accent:       #B23A2F;   /* hover / active — trade-paper red */
+
+  /* Film side */
+  --film:         #14100D;   /* warm near-black: anti-halation backing */
+  --film-text:    #F0E7D4;
+  --film-dim:     #9C917C;
+  --film-dimmer:  #6E6455;
+  --film-edge:    #5C5343;
+
+  /* Craft tints — warm-shifted to sit on cream, NOT white-based pastels */
+  --t-camera:     #EDE2C4;
+  --t-cutting:    #DCE6D4;
+  --t-design:     #D6E0E8;
+  --t-effects:    #EFDBD3;
+  --t-sound:      #E0DAE9;
+  --t-costume:    #EEDADF;
+  --t-neutral:    #DCD6C6;
+
+  /* Craft tint text — darkened for contrast on the tint */
+  --t-camera-ink:   #7A5A17;
+  --t-cutting-ink:  #3E5530;
+  --t-design-ink:   #2C4A5C;
+  --t-effects-ink:  #7A3B2A;
+  --t-sound-ink:    #453A5C;
+  --t-costume-ink:  #6B3244;
+  --t-neutral-ink:  #5C5344;
+
+  /* Type — next/font overrides these on <body>. These are fallbacks. */
+  --font-display: 'Arial Narrow', Impact, sans-serif;
+  --font-body:    -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Geometry */
+  --rail-w: 232px;
+}
+
+/* ---------- 2. Reset ---------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; height: 100%; }
+
+body {
+  font-family: var(--font-body);
+  color: var(--ink-2);
+  background: var(--film);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button { font: inherit; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Skip link — first tab stop, jumps past the rail */
+.skip {
+  position: absolute; left: -9999px; top: 0; z-index: 100;
+  background: var(--paper); color: var(--ink);
+  padding: 10px 16px; font-family: var(--font-mono); font-size: 12px;
+}
+.skip:focus { left: 8px; top: 8px; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- 3. The shell ---------- */
+/* Fixed viewport. The rail never moves; only .main scrolls.
+   100dvh not 100vh — vh includes the mobile URL bar and clips the bottom. */
+
+.shell {
+  height: 100dvh;
+  display: grid;
+  grid-template-columns: var(--rail-w) 1fr;
+  overflow: hidden;
+}
+
+/* ---------- 4. The rail (film margin) ---------- */
+
+.rail {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  padding: 30px 0 0 44px;
+  background-color: var(--film);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.32'/%3E%3C/svg%3E");
+  background-size: 300px 300px;
+}
+
+/* Grain boils on hover.
+   Real grain does not SLIDE — it re-randomises every frame. steps(1,end)
+   jumps to unrelated offsets so each frame is a fresh random region. */
+@media (hover: hover) {
+  .rail:hover { animation: boil 0.42s steps(1, end) infinite; }
+}
+@keyframes boil {
+  0%   { background-position: 0 0; }
+  20%  { background-position: -71px 43px; }
+  40%  { background-position: 38px -87px; }
+  60%  { background-position: -113px -29px; }
+  80%  { background-position: 64px 96px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rail:hover { animation: none; }
+}
+
+/* Optical soundtrack — continuous parallel lines, left edge.
+   Includes the indigo digital-sound data band. */
+.rail__track {
+  position: absolute; left: 0; top: 0; bottom: 0; width: 26px;
+  background: linear-gradient(to right,
+    transparent 0 9px,
+    rgba(207, 200, 182, 0.75) 9px 11px,
+    transparent 11px 14px,
+    rgba(207, 200, 182, 0.45) 14px 15px,
+    transparent 15px 18px,
+    rgba(42, 46, 107, 0.85) 18px 21px,
+    transparent 21px 23px,
+    rgba(207, 200, 182, 0.30) 23px 24px,
+    transparent 24px);
+}
+
+/* Perforations — 8x11, radius 2, 12px gaps, only ~3px visible.
+   Filled with the PAPER colour so they read as punched through the
+   margin onto the page. Breaks if the content bg stops being flat. */
+.rail__perfs {
+  position: absolute; right: -5px; top: 14px; bottom: 14px; width: 8px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='23'%3E%3Crect width='8' height='11' rx='2' fill='%23E6E1D6'/%3E%3C/svg%3E");
+  background-repeat: repeat-y;
+}
+
+/* Key numbers — sideways, low contrast, margin only */
+.rail__code {
+  position: absolute; right: 14px; top: 30px;
+  writing-mode: vertical-rl;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.28em; color: var(--film-edge); opacity: 0.8;
+}
+
+.rail__inner { position: relative; z-index: 1; }
+
+.logo {
+  display: flex; align-items: center; justify-content: center;
+  width: 116px; height: 38px;
+  border: 1px dashed #4A4234; border-radius: 2px;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.1em; color: var(--film-edge);
+}
+
+.rail__sub {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.04em; line-height: 1.55;
+  color: var(--muted-2); margin: 12px 0 0; max-width: 130px;
+}
+
+.nav { margin-top: 48px; }
+.nav a {
+  display: block;
+  font-weight: 500; font-size: 13px; letter-spacing: 0.2em;
+  color: var(--film-dim); margin-bottom: 21px;
+  transition: color 0.15s;
+}
+.nav a:hover, .nav a[aria-current="page"] { color: var(--film-text); }
+
+.social {
+  position: absolute; left: 44px; bottom: 28px;
+  display: flex; gap: 16px; z-index: 1;
+}
+.social a { color: var(--film-dimmer); transition: color 0.15s; }
+.social a:hover { color: var(--film-text); }
+.social svg { width: 17px; height: 17px; display: block; }
+
+/* ---------- 5. Main pane ---------- */
+
+.main {
+  overflow-y: auto;
+  height: 100%;
+  padding: 34px 40px 0;
+  background-color: var(--paper);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62' numOctaves='5'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='0.075'/%3E%3C/svg%3E");
+  background-size: 260px 260px;
+}
+
+.wrap { max-width: 940px; }
+
+/* ---------- 6. Type scale ---------- */
+
+h1, h2, h3 { margin: 0; font-weight: 400; }
+
+.h-page  { font-family: var(--font-display); font-size: 46px; line-height: 1.05; color: var(--ink); }
+.h-piece { font-family: var(--font-display); font-size: 38px; line-height: 1.1;  color: var(--ink); }
+.h-sub   { font-family: var(--font-display); font-size: 24px; line-height: 1.15; color: var(--ink); }
+
+.lede { font-size: 17px; line-height: 1.75; color: var(--ink-2); max-width: 62ch; }
+
+.meta { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--muted); }
+
+.eyebrow {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.16em; color: var(--ink-3);
+  padding-bottom: 9px; border-bottom: 1px solid var(--rule-strong);
+  margin: 0 0 18px;
+}
+
+.page-head {
+  display: flex; justify-content: space-between;
+  align-items: flex-start; gap: 20px; flex-wrap: wrap;
+}
+
+/* ---------- 7. Prose (rendered Markdown) ---------- */
+
+.prose { font-size: 16px; line-height: 1.75; color: var(--ink-2); max-width: 66ch; }
+.prose p { margin: 0 0 16px; }
+.prose p:last-child { margin-bottom: 0; }
+.prose h2 {
+  font-family: var(--font-display); font-size: 26px; line-height: 1.15;
+  color: var(--ink); margin: 32px 0 14px;
+}
+.prose h3 {
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.14em;
+  color: var(--ink-3); margin: 28px 0 12px; text-transform: uppercase;
+}
+.prose a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.prose blockquote {
+  margin: 22px 0; padding: 4px 0 4px 20px;
+  border-left: 2px solid var(--rule-strong);
+  color: var(--ink-3); font-style: italic;
+}
+.prose ul, .prose ol { margin: 0 0 16px; padding-left: 22px; }
+.prose li { margin-bottom: 7px; }
+.prose code {
+  font-family: var(--font-mono); font-size: 0.88em;
+  background: var(--paper-card); padding: 2px 5px; border-radius: 2px;
+}
+.prose hr { border: 0; border-top: 1px solid var(--rule); margin: 30px 0; }
+.prose--small { font-size: 15px; }
+
+/* ---------- 8. Buttons & links ---------- */
+
+.btn {
+  display: inline-block;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em;
+  color: var(--ink); background: none;
+  border: 1px solid var(--rule-strong); border-radius: 2px;
+  padding: 9px 14px; cursor: pointer; text-align: center;
+  transition: color 0.15s, border-color 0.15s;
+}
+.btn:hover { color: var(--accent); border-color: var(--accent); }
+.btn-wide { display: block; padding: 17px; letter-spacing: 0.2em; font-size: 12px; }
+
+.underlined { text-decoration: underline; text-underline-offset: 3px; }
+.underlined:hover { color: var(--accent); }
+
+/* ---------- 9. Hero frame ---------- */
+
+.frame { background: var(--film); padding: 10px; }
+.frame__inner {
+  aspect-ratio: 1.85 / 1;
+  background: #1A1712;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.16em; color: var(--film-dimmer);
+  overflow: hidden;
+}
+.frame__inner img { width: 100%; height: 100%; object-fit: cover; }
+.credit { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin: 9px 0 0; }
+
+/* ---------- 10. Section headers ---------- */
+
+.sec-head {
+  display: flex; justify-content: space-between;
+  align-items: baseline; gap: 12px;
+  border-bottom: 1px solid var(--rule-strong);
+  padding-bottom: 9px;
+}
+.sec-label { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--ink-3); }
+.sec-gloss { font-size: 13px; font-style: italic; color: var(--muted); }
+
+/* ---------- 11. Homepage entries ---------- */
+
+.entry { padding: 22px 0 20px; border-bottom: 1px solid var(--rule); }
+.entry:last-child { border-bottom: none; }
+.entry__date { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--muted); margin: 0 0 9px; }
+.entry__title { font-family: var(--font-display); font-size: 29px; line-height: 1.12; color: var(--ink); margin-bottom: 11px; }
+.entry a:hover .entry__title { color: var(--accent); }
+.entry__blurb { font-size: 15px; line-height: 1.7; color: var(--ink-2); max-width: 64ch; margin: 0; }
+
+/* News Parts — margin-note shape: fixed source column, comment beside it */
+.note { display: flex; gap: 16px; padding: 15px 0; border-top: 1px solid var(--rule); }
+.note__src { width: 88px; flex: none; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; line-height: 1.5; color: var(--muted); }
+.note__txt { flex: 1; font-size: 14.5px; line-height: 1.7; color: var(--ink-2); }
+.note:hover .note__txt, .note:hover .note__src { color: var(--accent); }
+
+/* ---------- 12. Review Notes table ---------- */
+
+.tbl-head {
+  display: flex; gap: 12px; align-items: center;
+  padding: 13px 12px 10px;
+  border-bottom: 1px solid var(--rule-strong);
+  position: sticky; top: 0; z-index: 2;
+  background-color: var(--paper);
+}
+.th {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em;
+  color: var(--ink-3); background: none; border: 0; padding: 0;
+  text-align: left; cursor: pointer;
+}
+.th:hover { color: var(--accent); }
+.th--static { color: var(--muted-2); cursor: default; }
+
+.row { display: flex; gap: 12px; align-items: baseline; padding: 14px 12px; cursor: pointer; }
+.row:hover * { color: var(--accent) !important; }
+
+.col-date  { width: 66px;  flex: none; font-family: var(--font-mono); font-size: 11px; color: #5C5344; }
+.col-craft { width: 78px;  flex: none; font-family: var(--font-mono); font-size: 11px; color: #5C5344; }
+.col-film  { width: 178px; flex: none; font-size: 14px; color: var(--ink-3); }
+.col-head  { flex: 1; min-width: 0; font-size: 15px; color: var(--ink); }
+
+select {
+  font-family: var(--font-mono); font-size: 11px;
+  height: 30px; padding: 0 6px;
+  background: var(--paper-card);
+  border: 1px solid var(--rule-strong); border-radius: 2px;
+  color: var(--ink);
+}
+
+/* Craft tints */
+.t-camera  { background: var(--t-camera); }
+.t-cutting { background: var(--t-cutting); }
+.t-design  { background: var(--t-design); }
+.t-effects { background: var(--t-effects); }
+.t-sound   { background: var(--t-sound); }
+.t-costume { background: var(--t-costume); }
+.t-neutral { background: var(--t-neutral); }
+
+.ink-camera  { color: var(--t-camera-ink); }
+.ink-cutting { color: var(--t-cutting-ink); }
+.ink-design  { color: var(--t-design-ink); }
+.ink-effects { color: var(--t-effects-ink); }
+.ink-sound   { color: var(--t-sound-ink); }
+.ink-costume { color: var(--t-costume-ink); }
+.ink-neutral { color: var(--t-neutral-ink); }
+
+/* ---------- 13. Article page ---------- */
+
+.art-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+
+.stamp {
+  width: 78px; height: 78px; flex: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+}
+
+.art-top { display: flex; gap: 24px; margin: 26px 0 34px; }
+.poster { width: 168px; flex: none; }
+.poster__img {
+  aspect-ratio: 2 / 3; background: #1A1712; border: 1px solid var(--film);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em;
+  color: var(--film-dimmer); overflow: hidden;
+}
+.poster__img img { width: 100%; height: 100%; object-fit: cover; }
+
+.stats { flex: 1; min-width: 0; }
+.stats__title {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em;
+  color: var(--ink-3); padding-bottom: 8px;
+  border-bottom: 1px solid var(--rule-strong); margin: 0 0 4px;
+}
+.stat {
+  display: flex; justify-content: space-between; gap: 14px;
+  align-items: baseline; padding: 6px 0;
+  border-bottom: 1px solid #D6CEBE;
+}
+.stat:last-child { border-bottom: none; }
+.stat dt { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.stat dd { margin: 0; font-size: 13px; color: var(--ink); text-align: right; }
+
+.credits { display: grid; grid-template-columns: repeat(3, 1fr); gap: 17px 24px; margin-bottom: 34px; }
+.credit-role { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin: 0 0 3px; }
+.credit-name { font-size: 14px; color: var(--ink); line-height: 1.4; margin: 0; }
+
+/* The role this piece argues for — same tint as its archive row and stamp */
+.credit--claimed { padding: 9px 11px; border-radius: 2px; margin: -9px -11px; }
+
+.cast { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px 24px; margin-bottom: 34px; }
+.links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+/* ---------- 14. Projects ---------- */
+
+.proj { display: flex; gap: 24px; padding: 26px 0; border-bottom: 1px solid #C4BCAA; }
+.proj:last-of-type { border-bottom: none; }
+.proj__preview { width: 190px; flex: none; }
+.proj__img {
+  aspect-ratio: 16 / 10; background: #1A1712;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em;
+  color: var(--film-dimmer);
+}
+.proj__img--empty { background: #211D17; opacity: 0.7; }
+.proj__body { flex: 1; min-width: 0; }
+.proj__body p { margin: 0; }
+
+.pill {
+  display: inline-block;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em;
+  padding: 4px 9px; border-radius: 2px;
+}
+
+/* ---------- 15. Other Notes cards ---------- */
+
+.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.card {
+  border: 1px solid #C4BCAA; border-radius: 2px; padding: 16px;
+  display: flex; flex-direction: column;
+  background: var(--paper-card);
+  transition: border-color 0.15s;
+}
+.card:hover { border-color: var(--accent); }
+.card:hover .card__title { color: var(--accent); }
+.card__title { font-family: var(--font-display); font-size: 21px; line-height: 1.15; color: var(--ink); margin: 12px 0 9px; }
+.card__excerpt { font-size: 13.5px; line-height: 1.6; color: var(--ink-2); flex: 1; margin: 0; }
+.card__date { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin: 13px 0 0; }
+
+/* ---------- 16. About ---------- */
+
+.thesis { font-family: var(--font-display); font-size: 42px; line-height: 1.12; color: var(--ink); max-width: 22ch; }
+.bio { display: flex; gap: 24px; }
+.bio__portrait { width: 132px; flex: none; }
+.bio__img {
+  aspect-ratio: 4 / 5; background: #1A1712;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em;
+  color: var(--film-dimmer); overflow: hidden;
+}
+.bio__img img { width: 100%; height: 100%; object-fit: cover; }
+
+.divider-strong { margin-top: 38px; padding-top: 26px; border-top: 2px solid var(--rule-strong); }
+.divider { margin-top: 34px; padding-top: 24px; border-top: 1px solid #C4BCAA; }
+
+/* ---------- 17. Footer ---------- */
+
+.foot {
+  display: flex; justify-content: space-between; gap: 16px;
+  padding: 26px 0 34px; margin-top: 34px;
+  border-top: 1px solid var(--rule);
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.04em; color: var(--muted);
+}
+.foot a { color: var(--ink-3); }
+
+/* ---------- 18. 404 ---------- */
+
+.nf { display: flex; flex-direction: column; justify-content: center; min-height: 60vh; }
+
+/* ============================================================
+   19. MOBILE — the rail rotates 90 degrees into a top strip.
+   Optical track along the top edge, perforations along the bottom.
+   ============================================================ */
+
+@media (max-width: 760px) {
+
+  .shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+
+  .rail {
+    height: auto;
+    padding: 36px 20px 22px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+
+  .rail__track {
+    left: 0; right: 0; top: 0; bottom: auto;
+    width: auto; height: 26px;
+    background: linear-gradient(to bottom,
+      transparent 0 9px,
+      rgba(207, 200, 182, 0.75) 9px 11px,
+      transparent 11px 14px,
+      rgba(207, 200, 182, 0.45) 14px 15px,
+      transparent 15px 18px,
+      rgba(42, 46, 107, 0.85) 18px 21px,
+      transparent 21px 23px,
+      rgba(207, 200, 182, 0.30) 23px 24px,
+      transparent 24px);
+  }
+
+  .rail__perfs {
+    top: auto; bottom: -5px; left: 14px; right: 14px;
+    width: auto; height: 8px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='23' height='8'%3E%3Crect width='11' height='8' rx='2' fill='%23E6E1D6'/%3E%3C/svg%3E");
+    background-repeat: repeat-x;
+  }
+
+  /* No room in the margin for edge codes or the subtitle */
+  .rail__code, .rail__sub { display: none; }
+
+  .rail__inner { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+
+  .nav { margin-top: 0; display: flex; gap: 22px; }
+  .nav a { margin-bottom: 0; font-size: 12px; letter-spacing: 0.16em; }
+
+  .social { position: static; left: auto; bottom: auto; }
+
+  .main { padding: 24px 20px 0; }
+
+  .h-page  { font-size: 34px; }
+  .h-piece { font-size: 28px; }
+  .thesis  { font-size: 29px; max-width: none; }
+  .lede    { font-size: 16px; }
+  .entry__title { font-size: 24px; }
+
+  .credits, .cast { grid-template-columns: 1fr 1fr; }
+  .cards { grid-template-columns: 1fr; }
+  .links { grid-template-columns: 1fr 1fr; }
+
+  .art-top { flex-direction: column; gap: 20px; }
+  .poster { width: 150px; }
+  .stamp { width: 62px; height: 62px; }
+
+  .proj { flex-direction: column; gap: 14px; }
+  .proj__preview { width: 100%; max-width: 260px; }
+
+  .bio { flex-direction: column; }
+  .bio__portrait { width: 120px; }
+
+  /* Table: drop the fourth column, as specified.
+     NOTE — this hides the HEADLINE, the only thing saying what a piece
+     argues. To keep headlines and drop dates instead, swap these two. */
+  .col-head { display: none; }
+  /* .col-date { display: none; } */
+
+  .col-film { flex: 1; width: auto; }
+  .tbl-head select { display: none; }
+
+  .foot { flex-direction: column; gap: 10px; }
+}
+
+@media (max-width: 420px) {
+  .credits, .cast, .links { grid-template-columns: 1fr; }
+  .nav { gap: 16px; }
+  .nav a { font-size: 11px; letter-spacing: 0.12em; }
+}
