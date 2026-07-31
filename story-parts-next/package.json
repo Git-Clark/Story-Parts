@@ -2,7 +2,6 @@
   "name": "story-parts",
   "version": "0.1.0",
   "private": true,
-  "description": "Story Parts — film authorship & other projects",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,8 +14,5 @@
     "gray-matter": "^4.0.3",
     "remark": "^15.0.1",
     "remark-html": "^16.0.1"
-  },
-  "engines": {
-    "node": ">=18.18.0"
   }
 }
